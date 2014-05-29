@@ -34,11 +34,9 @@ void main() {
     var C = readInt();
     var B = readListInt(N);
 
-    if (sum(B) < C) {
-        print("IMPOSSIBLE");
-    } else {
-        contributions(B, C).forEach(print);
-    }
+    var solution = contributions(B, C);
+    
+    solution.isEmpty ? print("IMPOSSIBLE") : solution.forEach(print);
 }
 
 List<int> contributions(List<int> budgets, int price) {
@@ -65,14 +63,13 @@ List<int> contributions(List<int> budgets, int price) {
             price -= contribution;
             
             if (price == 0) break;
+            
+            if (richs == 0) return [];
         }
     }
 
     return result;
 }
-
-int sum(List<int> budgets)
-    => budgets.fold(0, (prev, budget) => prev + budget);
 
 int count(List<int> budgets)
     => budgets.where((budget) => budget > 0).length;
