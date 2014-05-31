@@ -21,75 +21,50 @@
 */
 
 /*
-  Dart solution to the "Dwarfs standing on the shoulders of giants" CodinGame challenge.
+  Dart solution to the "Telephone Numbers" CodinGame challenge.
 
   Visit http://www.codingame.com/ for more information.
 */
 
 import "dart:io";
-import "dart:collection" show HashMap;
 
 void main() {
     var N = readInt();
-
-    var solver = new Solver(N);
-    var solution = solver.solve();
+    var phones = readListString(N);
     
+    var solution = 0;
+    
+    for (var i = 0; i < N; ++ i) {
+        var min = phones[i].length;
+        
+        for (var j = 0; j < i; ++ j) {
+            var count = compare(phones[i], phones[j]);
+            
+            if (count < min) {
+                min = count;
+            }
+        }
+        
+        solution += min;
+    }
+
     print(solution);
 }
 
-class Solver {
-    final Map<int, int> persons = new HashMap<int, int>();
-    final List<int> relations = new List<int>();
+int compare(String a, String b) {
+    var count = 0;
+    var len = a.length < b.length ? a.length : b.length;
     
-    Solver(int n) {
-        readRelations(n);
-    }
-
-    void readRelations(int n) {
-        for (var i = 0; i < n; ++ i) {
-            var line = readLine();
-            
-            var prev = persons[line[0]];
-            persons[line[0]] = relations.length;
-            relations.addAll([line[1], prev]);
-        }
+    while(count < len && a.codeUnitAt(count) == b.codeUnitAt(count)) {
+        count ++;
     }
     
-    int solve() {
-        var max = 0;
-        
-        for (var person in persons.keys) {
-            var len = chain(person);
-            if (len > max) {
-                max = len;
-            }
-        }
-        
-        return max;
-    }
-    
-    int chain(int person) {
-        var max = 1;
-        
-        var index = persons[person];
-        while (index != null) {
-            
-            var len = 1 + chain(relations[index]);
-            if (len > max) {
-                max = len;
-            }
-            
-            index = relations[index + 1];
-        }
-        
-        return max;
-    }
+    return a.length - count;
 }
 
 String readString() => stdin.readLineSync();
 
 int readInt() => int.parse(readString());
 
-List<int> readLine()
-    => readString().split(" ").map(int.parse).toList();
+List<String> readListString(int n)
+    => new List<String>.generate(n, (_) => readString());
