@@ -49,13 +49,15 @@ List<int> next(List<int> sequence) {
     
     for (var symbol in sequence.skip(1)) {
         
-        if (symbol != old) {
+        if (symbol == old) {
+            count ++;
+
+        } else {
             result.addAll([count, old]);
-            count = 0;
+            
+            count = 1;
+            old = symbol;
         }
-        
-        count ++;
-        old = symbol;
     }
     
     if (count != 0) result.addAll([count, old]);
