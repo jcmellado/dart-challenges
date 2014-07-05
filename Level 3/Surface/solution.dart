@@ -62,7 +62,8 @@ class Solver {
         // Set all cells as unvisited.
         unvisited.forEach((row) => row.fillRange(0, l, true));
 
-        // Use a local array instead of a recursive method to avoid the infamous stackoverflow exception.        
+        // Use a local array instead of a recursive method
+        // to avoid the infamous stackoverflow exception.        
         var points = new List<Point>()..add(point);
         
         while(points.isNotEmpty) {
