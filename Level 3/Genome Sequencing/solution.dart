@@ -44,7 +44,7 @@ class Solver {
 
     // Returns the minimum permutation length.
     int permute(String sequence, Iterable<String> subsequences) {
-        var min;
+        var len;
 
         // Done? Return the current sequence length.
         if (subsequences.isEmpty) return sequence.length;
@@ -58,12 +58,10 @@ class Solver {
             var rest = subsequences.where((e) => e != subsequence);
 
             // Minimum permutation length.
-            var len = permute(prefix, rest);
-
-            min = (min == null) || (len < min) ? len : min;
+            len = min(len, permute(prefix, rest));
         }
 
-        return min;
+        return len;
     }
     
     String concat(String a, String b) {
@@ -78,6 +76,8 @@ class Solver {
         }
         return a.substring(0, pos) + b;
     }
+    
+    int min(int a, int b) => a == null ? b : (b == null ? a : (a < b ? a : b));
 }
 
 String readString() => stdin.readLineSync();
