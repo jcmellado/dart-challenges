@@ -39,7 +39,7 @@ void main() {
  
 int solve(List<Calc> calcs) {
 
-    // Best scenario: All calculations could be performed.
+    // Best scenario: All calculations will can be performed.
     var tasks = calcs.length;
 
     // Hack: Order calculations by start day.
@@ -69,7 +69,7 @@ int solve(List<Calc> calcs) {
             // ---------]
             //   [---] <= new endpoint
             // or
-            // ---------]  <= keep the previous endpoint
+            // ---------] <= keep the previous endpoint
             //     [-------]
             if (calc.end < end) end = calc.end;
         }
