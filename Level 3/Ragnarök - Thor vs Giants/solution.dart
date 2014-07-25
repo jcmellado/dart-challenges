@@ -1,0 +1,199 @@
+/*
+  Copyright (c) 2014 Juan Mellado
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+*/
+
+/*
+  Dart solution to the "Ragnarök - Thor vs Giants" CodinGame challenge.
+
+  Visit http://www.codingame.com/ for more information.
+*/
+
+import "dart:io" show stdin;
+import "dart:math" show Point;
+
+void main() {
+    var thor = readPoint();
+
+    var solver = new Solver(thor);
+    
+    while (true) {
+        var turn = readLine();
+        var h = turn[0];
+        var n = turn[1];
+        
+        var giants = readPoints(n);
+    
+        var action = solver.solve(giants, h);
+    
+        print(action);
+    }
+}
+
+class Solver {
+    Point thor;
+
+    Solver(this.thor);
+
+    String solve(List<Point> giants, int h) {
+
+        // Enough for me!
+        if (countGiants(thor, 4, giants) >= giants.length / h) return "STRIKE";
+
+        var next = nextPosition(giants);
+        
+        // Can't move? Strike for your live!
+        if (next == null) return "STRIKE";
+        
+        // Same position? Just wait.
+        if (thor == next) return "WAIT";
+
+        // Move to the next position.
+        var action = "";
+        
+        if (next.y < thor.y) action += "N";
+        if (next.y > thor.y) action += "S";
+        if (next.x > thor.x) action += "E";
+        if (next.x < thor.x) action += "W";
+
+        // Update Thor's position.
+        thor = move(thor, action);
+
+        return action;
+    }
+    
+    final List<String> DIRS = const<String> ["E", "SE", "S", "SW", "W", "NW", "N", "NE"];
+
+    Point nextPosition(List<Point> giants) {
+        
+        // Move Thor to the center of mass of the giants.
+        var target = center(giants);
+
+        var dx = 0;
+        var dy = 0;
+        
+        if (thor.x < target.x) dx ++;
+        if (thor.x > target.x) dx --;
+        if (thor.y < target.y) dy ++;
+        if (thor.y > target.y) dy --;
+        
+        var next = new Point(thor.x + dx, thor.y + dy);
+
+        var safe = isSafe(next, giants);
+
+        // If the straight path is unsafe then try to find
+        // another path to the center of mass.
+        if (!safe) {
+            var min;
+
+            for (var dir in DIRS) {
+                var pos = move(thor, dir);
+                if (isSafe(pos, giants)) {
+                    
+                    // Take the short path!
+                    var len = pos.distanceTo(target);
+                    if (min == null || len < min) {
+                        min = len;
+                        
+                        next = pos;
+                        safe = true;
+                    }
+                }
+            }
+        }
+
+        return !safe ? null : next;
+    }
+
+    bool isSafe(Point pos, List<Point> giants) {
+        
+        // Stay on bounds.
+        if (pos.x < 0 || pos.x > 39 || pos.y < 0 || pos.y > 17) return false;
+
+        // The trick: Avoid giants in the movement direction.
+        var mx = pos.x + (2 * (pos.x - thor.x));
+        var my = pos.y + (2 * (pos.y - thor.y));
+
+        for (var giant in giants) {
+            if (giant.x == pos.x && giant.y == my) return false;
+            if (giant.x == mx && giant.y == my) return false;
+            if (giant.y == pos.y && giant.x == mx) return false;
+        }
+        
+        // Avoid giants!
+        return countGiants(pos, 1, giants) == 0;
+    }
+
+    // Center of mass of the giants.
+    Point center(List<Point> giants) {
+        var x = 0;
+        var y = 0;
+    
+        for (var giant in giants) {
+            x += giant.x;
+            y += giant.y;
+        }
+        x ~/= giants.length;
+        y ~/= giants.length;
+    
+        return new Point(x, y);
+    }
+    
+    // Number of giants inside the margin around the given position.
+    int countGiants(Point pos, int margin, List<Point> giants) {
+        var count = 0;
+        
+        for (var giant in giants) {
+            if (giant.x >= pos.x - margin &&
+                giant.x <= pos.x + margin &&
+                giant.y >= pos.y - margin &&
+                giant.y <= pos.y + margin) {
+                count ++;
+            }
+        }
+
+        return count;
+    }
+    
+    Point move(Point pos, String action) {
+        var dx = 0;
+        var dy = 0;
+        
+        if (action.contains("N")) dy --;
+        if (action.contains("S")) dy ++;
+        if (action.contains("E")) dx ++;
+        if (action.contains("W")) dx --;
+        
+        return new Point(pos.x + dx, pos.y + dy);
+    }
+}
+
+String readString() => stdin.readLineSync();
+
+List<int> readLine()
+    => readString().split(" ").map(int.parse).toList();
+
+Point readPoint() {
+    var line = readLine();
+    return new Point(line[0], line[1]);
+}
+
+List<Point> readPoints(int n)
+    => new List<Point>.generate(n, (_) => readPoint());
