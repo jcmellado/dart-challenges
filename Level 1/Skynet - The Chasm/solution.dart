@@ -23,27 +23,36 @@
 /*
   Dart solution to the "Skynet - The Chasm" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
 
 void main() {
-    var R = readInt();
-    var G = readInt();
-    var L = readInt();
-    
-    while (true) {
-        var S = readInt();
-        var X = readInt();
-        
-        var command = "WAIT";
-        if (S > G + 1 || X >= R + G) command = "SLOW";
-        else if (X == R - 1) command = "JUMP";
-        else if (S < G + 1) command = "SPEED";
-        
-        print(command);
-    }
+  var road = readInt();
+  var gap = readInt();
+  var landing = readInt();
+
+  while (true) {
+    var speed = readInt();
+    var x = readInt();
+
+    var command;
+
+    // Jumps to avoid falling down.
+    if (x == road - 1) command = "JUMP";
+
+    // Decelerates to get the correct speed or stop the moto after jumping.
+    else if (speed > gap + 1 || x >= road + gap) command = "SLOW";
+
+    // Accelerates to reach the minimum speed to jump the gap.
+    else if (speed < gap + 1) command = "SPEED";
+
+    // Default command.
+    else command = "WAIT";
+
+    print(command);
+  }
 }
 
 String readString() => stdin.readLineSync();

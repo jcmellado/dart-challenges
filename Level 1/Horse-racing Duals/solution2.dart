@@ -23,34 +23,37 @@
 /*
   Dart solution to the "Horse-racing Duals" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
 
 void main() {
-    var N = readInt();
-    var S = readListInt(N);
-    
-    S.sort(); // Hack!
-    
-    var a = S[1];
-    var min = a - S[0];
-    
-    for (var b in S.skip(2)) {
-        
-        var dis = b - a;
-        
-        if (dis < min) {
-            min = dis;
-        }
-        
-        a = b;
+  var n = readInt();
+  var horses = readHorses(n);
+
+  // THE TRICK: Sort the list!
+  horses.sort();
+
+  var old = horses[1];
+  var min = old - horses[0];
+
+  for (var horse in horses.skip(2)) {
+
+    var dis = horse - old;
+
+    if (dis < min) {
+      min = dis;
     }
-    
-    print(min);
+
+    old = horse;
+  }
+
+  print(min);
 }
 
-int readInt() => int.parse(stdin.readLineSync());
+String readString() => stdin.readLineSync();
 
-List<int> readListInt(int n) => new List<int>.generate(n, (_) => readInt());
+int readInt() => int.parse(readString());
+
+List<int> readHorses(int n) => new List<int>.generate(n, (_) => readInt());

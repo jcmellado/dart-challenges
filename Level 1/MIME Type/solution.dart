@@ -23,36 +23,46 @@
 /*
   Dart solution to the "MIME Type" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
 
 void main() {
-    var N = readInt();
-    var Q = readInt();
-    
-    var types = new Map<String, String>();
-    for (var i = 0; i < N; ++ i) {
-        var line = readString().split(" ");
-        
-        types[line[0].toLowerCase()] = line[1];
+  var n = readInt();
+  var q = readInt();
+
+  var types = readTypes(n);
+  var files = readFiles(q);
+
+  for (var file in files) {
+    var type;
+
+    // Extracts the file extension and finds its MIME type.
+    var pos = file.lastIndexOf(".");
+    if (pos != -1) {
+      type = types[file.substring(pos + 1)];
     }
-    
-    var files = new List<String>.generate(Q, (_) => readString().toLowerCase());
-    
-    for (var file in files) {
-        var mime;
-    
-        var dot = file.lastIndexOf(".");
-        if (dot != -1) {
-            mime = types[file.substring(dot + 1)];
-        }
-        
-        print(mime == null ? "UNKNOWN" : mime);
-    }
+
+    print(type == null ? "UNKNOWN" : type);
+  }
 }
+
+String readString() => stdin.readLineSync();
 
 int readInt() => int.parse(readString());
 
-String readString() => stdin.readLineSync();
+Map<String, String> readTypes(int n) {
+  var types = new Map<String, String>();
+
+  for (var i = 0; i < n; ++i) {
+    var line = readString().split(" ");
+
+    types[line[0].toLowerCase()] = line[1];
+  }
+
+  return types;
+}
+
+List<String> readFiles(int n)
+  => new List<String>.generate(n, (_) => readString().toLowerCase());

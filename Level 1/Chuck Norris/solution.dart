@@ -23,52 +23,55 @@
 /*
   Dart solution to the "Chuck Norris" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
+import "dart:convert" show ASCII;
 
 void main() {
-    var message = stdin.readLineSync();
+  var message = readString();
 
-    var solution = "";
-    var count = 0;
-    var old;
+  message = ASCII.encode(message);
 
-    for (var char in message.codeUnits) {
+  var solution = "";
+  var count = 0;
+  var old;
 
-        for (var i = 6; i >= 0; -- i) {
-            var bit = (char >> i) & 0x01;
+  for (var char in message) {
 
-            if (old != null && old != bit) {
-                solution = code(solution, old, count);
-                count = 0;
-            }
+    // Extracts one bit each time.
+    for (var i = 6; i >= 0; --i) {
+      var bit = (char >> i) & 0x01;
 
-            count ++;
-            old = bit;
-        }
+      // Detects bit value changes.
+      if (old != null && old != bit) {
+        solution = code(solution, old, count);
+        count = 0;
+      }
+
+      count++;
+      old = bit;
     }
-    
-    solution = code(solution, old, count);
-    
-    print(solution);
+  }
+
+  // Takes care of trailing bits.
+  solution = code(solution, old, count);
+
+  print(solution);
 }
 
 String code(String solution, int bit, int count) {
-    if (solution != "") {
-        solution += " ";
-    }
-    
-    if (bit == 0) {
-        solution += "00 ";
-    } else {
-        solution += "0 ";
-    }
 
-    for (var i = 0; i < count; ++ i) {
-        solution += "0";
-    }
-    
-    return solution;
+  if (solution != "") solution += " ";
+
+  solution += bit == 0 ? "00 " : "0 ";
+
+  for (var i = 0; i < count; ++i) {
+    solution += "0";
+  }
+
+  return solution;
 }
+
+String readString() => stdin.readLineSync();

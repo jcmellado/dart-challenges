@@ -23,34 +23,34 @@
 /*
   Dart solution to the "Temperatures" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
 
 void main() {
-    var N = readInt();
-    
-    print(N == 0 ? 0 : closest());
+  var n = readInt();
+
+  print(n == 0 ? 0 : closestZero());
 }
 
-int closest() {
-    var min = 5526 + 1;
-    
-    var T = readListInt();
-    for (var t in T) {
-        var dif = t.abs() - min.abs();
-        if ((dif < 0) || ((dif == 0) && (t > 0))) {
-            min = t;
-        }
+int closestZero() {
+  var min = 5526 + 1;
+
+  var temperatures = readTemperatures();
+  for (var temperature in temperatures) {
+
+    var dif = temperature.abs() - min.abs();
+    if ((dif < 0) || ((dif == 0) && (temperature > 0))) {
+      min = temperature;
     }
-    
-    return min;
+  }
+
+  return min;
 }
 
 String readString() => stdin.readLineSync();
 
 int readInt() => int.parse(readString());
 
-List<int> readListInt()
-    => readString().split(' ').map((e) => int.parse(e)).toList();
+List<int> readTemperatures() => readString().split(" ").map(int.parse).toList();

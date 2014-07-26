@@ -23,51 +23,65 @@
 /*
   Dart solution to the "Horse-racing Duals" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
+
+// Note: This solution is a bit weird, there is a better
+// one in the same folder where this file is located.
 
 void main() {
-    var N = readInt();
-    var S = new List<int>(N)
-        ..[0] = readInt()
-        ..[1] = readInt();
-    
-    var a = S[0] < S[1] ? S[0] : S[1];
-    var b = S[0] > S[1] ? S[0] : S[1];
-    var min = b - a;
-    
-    for (var i = 2; i < N; ++ i) {
-        var c = readInt();
-        
-        var dist;
-        
-        if (c < a) {
-            dist = a - c;
-            a = c;
-            
-        } else if (c > b) {
-            dist = c - b;
-            b = c;
-            
-        } else {
-            for (var d in S.take(i)) {
-                dist = (c - d).abs();
-                if (dist < min) {
-                    min = dist;
-                }
-            }
-        }
-        
+  var n = readInt();
+  var horses = new List<int>(n)
+      ..[0] = readInt()
+      ..[1] = readInt();
+
+  // Creates the interval [a  b] with the first two values.
+  var a = horses[0] < horses[1] ? horses[0] : horses[1];
+  var b = horses[0] > horses[1] ? horses[0] : horses[1];
+  var min = b - a;
+
+  // Compares the rest of values against [a b]
+  for (var i = 2; i < n; ++i) {
+    var dist;
+
+    // Reads a new value.
+    var c = readInt();
+
+    // c [a  b] => [c  b]
+    if (c < a) {
+      dist = a - c;
+      a = c;
+
+      // [a  b] c => [a  c]
+    } else if (c > b) {
+      dist = c - b;
+      b = c;
+
+      // [a c b]
+    } else {
+
+      // Worst scenario? Brute force approach!
+      // Compares the value against all the rest.
+      for (var d in horses.take(i)) {
+        dist = (c - d).abs();
         if (dist < min) {
-            min = dist;
+          min = dist;
         }
-        
-        S[i] = c;
+      }
     }
-    
-    print(min);
+
+    if (dist < min) {
+      min = dist;
+    }
+
+    horses[i] = c;
+  }
+
+  print(min);
 }
 
-int readInt() => int.parse(stdin.readLineSync());
+String readString() => stdin.readLineSync();
+
+int readInt() => int.parse(readString());

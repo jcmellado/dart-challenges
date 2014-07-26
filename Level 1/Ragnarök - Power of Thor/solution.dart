@@ -21,38 +21,36 @@
 */
 
 /*
-  Dart solution to the "Ragnarök - Power of Thor" CodinGame challenge.
+  Dart solution to the "RagnarÃ¶k - Power of Thor" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
 
 void main() {
-    var init = readListInt();
-    var LX = init[0];
-    var LY = init[1];
-    var TX = init[2];
-    var TY = init[3];
+  var line = readLine();
+  var lx = line[0];
+  var ly = line[1];
+  var tx = line[2];
+  var ty = line[3];
 
-    while (true) {
-        var E = readInt();
-        
-        var ver = "";
-        var hor = "";
-        
-        if (TY > LY) { TY--; ver = "N"; }
-        if (TY < LY) { TY++; ver = "S"; }
-        if (TX > LX) { TX--; hor = "W"; }
-        if (TX < LX) { TX++; hor = "E"; }
+  while (true) {
+    var energy = readInt();
 
-        print("$ver$hor");
-    }
+    var action = "";
+
+    if (ty > ly) { ty --; action += "N"; }
+    if (ty < ly) { ty ++; action += "S"; }
+    if (tx > lx) { tx --; action += "W"; }
+    if (tx < lx) { tx ++; action += "E"; }
+
+    print("$action");
+  }
 }
 
 String readString() => stdin.readLineSync();
 
 int readInt() => int.parse(readString());
 
-List<int> readListInt() 
-    => readString().split(" ").map(int.parse).toList();
+List<int> readLine() => readString().split(" ").map(int.parse).toList();

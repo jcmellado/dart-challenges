@@ -23,80 +23,72 @@
 /*
   Dart solution to the "Skynet Finale - Level 1" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
 
 void main() {
-    var init = readLineInt();
-    var N = init[0];
-    var L = init[1];
-    var E = init[2];
-    var links = readListLink(L);
-    var gateways = readListInt(E);
+  var line = readLine();
+  var n = line[0];
+  var l = line[1];
+  var e = line[2];
 
-    var solver = new Solver(links, gateways);
+  var links = readLinks(l);
+  var gateways = readGateways(e);
 
-    while (true) {
-        var SI = readInt();
+  var solver = new Solver(links, gateways);
 
-        var link = solver.solve(SI);
-        
-        link.severed = true;
-        
-        print("${link.n1} ${link.n2}");
-    }
+  while (true) {
+    var si = readInt();
+
+    var link = solver.solve(si);
+
+    print("${link.n1} ${link.n2}");
+  }
 }
 
 class Solver {
-    final List<Link> links;
-    final List<int> gateways;
-    
-    Solver(this.links, this.gateways);
-    
-    Link solve(int SI) {
-        var sever;
-        
-        for (var link in links) {
-            if (!link.severed) {
-                for (var gateway in gateways) {
-                    if (link.n1 == gateway || link.n2 == gateway) {
-                        if (link.n1 == SI || link.n2 == SI) {
-                            return link;
-                        }
-                        sever = link;
-                    }
-                }
-            }
-        }
-        
-        return sever;
-    }
+  final List<Link> links;
+  final List<int> gateways;
+
+  Solver(this.links, this.gateways);
+
+  Link solve(int si) {
+    var sever = links
+
+      // Link connecting the Skynet agent with a gateway ...
+      .firstWhere((link) => gateways.any((gateway) => link.connect(si, gateway)),
+
+      // ... or just any link.
+      orElse: () => links.last);
+
+    links.remove(sever);
+
+    return sever;
+  }
 }
 
 class Link {
-    int n1;
-    int n2;
-    bool severed = false;
-    
-    Link(this.n1, this.n2);
+  final int n1;
+  final int n2;
+
+  const Link(this.n1, this.n2);
+
+  bool connect(int a, int b) => (n1 == a && n2 == b) || (n1 == b && n2 == a);
 }
 
-Link readLink() {
-    var line = readLineInt();
-    return new Link(line[0], line[1]);
-}
-
-List<Link> readListLink(int n)
-    => new List<Link>.generate(n, (_) => readLink());
-
-List<int> readLineInt()
-    => readString().split(" ").map(int.parse).toList();
-
-List<int> readListInt(int n)
-    => new List<int>.generate(n, (_) => readInt());
+String readString() => stdin.readLineSync();
 
 int readInt() => int.parse(readString());
 
-String readString() => stdin.readLineSync();
+List<int> readLine() => readString().split(" ").map(int.parse).toList();
+
+List<Link> readLinks(int n) => new List<Link>.generate(n, (_) => readLink());
+
+Link readLink() {
+  var line = readLine();
+  return new Link(line[0], line[1]);
+}
+
+List<int> readGateways(int n) => new List<int>.generate(n, (_) => readInt());

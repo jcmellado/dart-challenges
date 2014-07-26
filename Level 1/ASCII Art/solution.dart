@@ -23,38 +23,50 @@
 /*
   Dart solution to the "ASCII Art" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
+import "dart:convert" show ASCII;
+
+const int A = 65;
+const int Z = 90;
+const int QUESTION_MARK = 91;
 
 void main() {
-    var L = readInt();
-    var H = readInt();
-    var T = readString();
-    var ASCII = new List<String>.generate(H, (_) => readString());
+  var width = readInt();
+  var height = readInt();
+  var text = readString();
+  var ascii = readAscii(height);
 
-    var text = T.toUpperCase().codeUnits;
+  text = ASCII.encode(text.toUpperCase());
 
-    for (var i = 0; i < H; ++ i) {
-        var output = "";
-        
-        for (var char in text) {
-            if (char < 65 || char > 90) {
-                char = 91;
-            }
-    
-            var pos = (char - 65) * L;
+  // Rows.
+  for (var i = 0; i < height; ++i) {
+    var output = "";
 
-            for (var j = 0; j < L; ++ j) {
-                output += ASCII[i][pos + j];
-            }
-        }
-        
-        print(output);
+    // Characters
+    for (var char in text) {
+
+      if (char < A || char > Z) {
+        char = QUESTION_MARK;
+      }
+
+      var pos = (char - A) * width;
+
+      // Columns.
+      for (var j = 0; j < width; ++j) {
+        output += ascii[i][pos + j];
+      }
     }
+
+    print(output);
+  }
 }
+
+String readString() => stdin.readLineSync();
 
 int readInt() => int.parse(readString());
 
-String readString() => stdin.readLineSync();
+List<String> readAscii(int n)
+  => new List<String>.generate(n, (_) => readString());
