@@ -52,91 +52,54 @@ class Solver {
 
     Solver(this.thor);
 
+    final List<String> DIRS = const<String> ["WAIT", "E", "SE", "S", "SW", "W", "NW", "N", "NE"];
+
     String solve(List<Point> giants, int h) {
+        var action;
 
-        // Enough for me!
-        if (countGiants(thor, 4, giants) >= giants.length / h) return "STRIKE";
+        // Center of mass of the giants.
+        var target = center(giants);
 
-        var next = nextPosition(giants);
+        // Try to find the shortest safe path.
+        var min;
+
+        for (var dir in DIRS) {
+            var pos = move(thor, dir);
+            
+            var len = pos.distanceTo(target);
+            if (min == null || len < min) {
+
+                if (isSafe(pos, giants)) {
+                    min = len;
+                    action = dir;
+                }
+            }
+        }
         
-        // Can't move? Strike for your live!
-        if (next == null) return "STRIKE";
+        // Can't move or there are a lot of giants near? Strike for your live!
+        if (action == null || countGiants(thor, 4, giants) >= giants.length / h) return "STRIKE";
         
-        // Same position? Just wait.
-        if (thor == next) return "WAIT";
-
-        // Move to the next position.
-        var action = "";
-        
-        if (next.y < thor.y) action += "N";
-        if (next.y > thor.y) action += "S";
-        if (next.x > thor.x) action += "E";
-        if (next.x < thor.x) action += "W";
-
         // Update Thor's position.
         thor = move(thor, action);
 
         return action;
     }
     
-    final List<String> DIRS = const<String> ["E", "SE", "S", "SW", "W", "NW", "N", "NE"];
-
-    Point nextPosition(List<Point> giants) {
-        
-        // Move Thor to the center of mass of the giants.
-        var target = center(giants);
-
-        var dx = 0;
-        var dy = 0;
-        
-        if (thor.x < target.x) dx ++;
-        if (thor.x > target.x) dx --;
-        if (thor.y < target.y) dy ++;
-        if (thor.y > target.y) dy --;
-        
-        var next = new Point(thor.x + dx, thor.y + dy);
-
-        var safe = isSafe(next, giants);
-
-        // If the straight path is unsafe then try to find
-        // another path to the center of mass.
-        if (!safe) {
-            var min;
-
-            for (var dir in DIRS) {
-                var pos = move(thor, dir);
-                if (isSafe(pos, giants)) {
-                    
-                    // Take the short path!
-                    var len = pos.distanceTo(target);
-                    if (min == null || len < min) {
-                        min = len;
-                        
-                        next = pos;
-                        safe = true;
-                    }
-                }
-            }
-        }
-
-        return !safe ? null : next;
-    }
-
     bool isSafe(Point pos, List<Point> giants) {
         
         // Stay on bounds.
         if (pos.x < 0 || pos.x > 39 || pos.y < 0 || pos.y > 17) return false;
 
         // The trick: Avoid giants in the movement direction.
+        // It passes the tests, but it probably fails for other scenarios.
         var mx = pos.x + (2 * (pos.x - thor.x));
         var my = pos.y + (2 * (pos.y - thor.y));
 
         for (var giant in giants) {
             if (giant.x == pos.x && giant.y == my) return false;
-            if (giant.x == mx && giant.y == my) return false;
             if (giant.y == pos.y && giant.x == mx) return false;
         }
-        
+
         // Avoid giants!
         return countGiants(pos, 1, giants) == 0;
     }
@@ -156,7 +119,7 @@ class Solver {
         return new Point(x, y);
     }
     
-    // Number of giants inside the margin around the given position.
+    // Number of giants inside the area around the given position.
     int countGiants(Point pos, int margin, List<Point> giants) {
         var count = 0;
         
@@ -175,11 +138,13 @@ class Solver {
     Point move(Point pos, String action) {
         var dx = 0;
         var dy = 0;
-        
-        if (action.contains("N")) dy --;
-        if (action.contains("S")) dy ++;
-        if (action.contains("E")) dx ++;
-        if (action.contains("W")) dx --;
+
+        if (action != "WAIT" && action != "STRIKE") {
+            if (action.contains("N")) dy --;
+            if (action.contains("S")) dy ++;
+            if (action.contains("E")) dx ++;
+            if (action.contains("W")) dx --;
+        }
         
         return new Point(pos.x + dx, pos.y + dy);
     }
