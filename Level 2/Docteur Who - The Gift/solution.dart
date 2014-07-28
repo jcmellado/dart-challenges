@@ -23,58 +23,65 @@
 /*
   Dart solution to the "Docteur Who - The Gift" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
 import "dart:math" show min;
 
 void main() {
-    var N = readInt();
-    var C = readInt();
-    var B = readListInt(N);
+  var n = readInt();
+  var price = readInt();
+  var budgets = readBudgets(n);
 
-    var solution = contributions(B, C);
-    
-    solution.isEmpty ? print("IMPOSSIBLE") : solution.forEach(print);
+  var solution = contributions(budgets, price);
+
+  solution.isEmpty ? print("IMPOSSIBLE") : solution.forEach(print);
 }
 
 List<int> contributions(List<int> budgets, int price) {
-    var result = new List<int>.filled(budgets.length, 0);
+  var solution = new List<int>.filled(budgets.length, 0);
 
-    budgets.sort();
+  // THE TRICK: Sort the list!
+  budgets.sort();
 
-    var richs = count(budgets);
+  // Oods with some money to waste.
+  var richs = budgets.where((budget) => budget > 0).length;
 
-    while(price != 0) {
+  var remainder = price;
+  while (remainder != 0) {
 
-        var part = (price / richs).floor();
-        if (part == 0) {
-            part = 1;
-        }
-
-        for (var i = budgets.length - 1; i >= 0; -- i) {
-            
-            if (budgets[i] != 0 && budgets[i] <= part) richs --;
-
-            var contribution = min(budgets[i], part);
-            budgets[i] -= contribution;
-            result[i] += contribution;
-            price -= contribution;
-            
-            if (price == 0) break;
-            
-            if (richs == 0) return [];
-        }
+    // Quantity to be paid, at least one coin.
+    var part = (remainder / richs).floor();
+    if (part == 0) {
+      part = 1;
     }
 
-    return result;
+    for (var i = budgets.length - 1; i >= 0; --i) {
+
+      // Contribute with all the money you can.
+      var contribution = min(budgets[i], part);
+
+      remainder -= contribution;
+      budgets[i] -= contribution;
+      solution[i] += contribution;
+
+      // Done?
+      if (remainder == 0) return solution;
+
+      // Sorry, you wasted all your money, you aren't rich anymore.
+      if (contribution != 0 && budgets[i] == 0) richs--;
+
+      // No more money?
+      if (richs == 0) return <int>[];
+    }
+  }
+
+  return solution;
 }
 
-int count(List<int> budgets)
-    => budgets.where((budget) => budget > 0).length;
+String readString() => stdin.readLineSync();
 
-int readInt() => int.parse(stdin.readLineSync());
+int readInt() => int.parse(readString());
 
-List<int> readListInt(int n)
-    => new List<int>.generate(n, (_) => readInt());
+List<int> readBudgets(int n) => new List<int>.generate(n, (_) => readInt());

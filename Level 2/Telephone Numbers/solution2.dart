@@ -23,40 +23,42 @@
 /*
   Dart solution to the "Telephone Numbers" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
 
 void main() {
-    var N = readInt();
-    var phones = readListString(N);
-    
-    phones.sort(); // Hack!
-    
-    var solution = N == 0 ? 0 : phones.first.length;
-    
-    for (var i = 1; i < N; ++ i) {
-        solution += compare(phones[i], phones[i - 1]);
-    }
+  var n = readInt();
+  var phones = readPhones(n);
 
-    print(solution);
+  // THE TRICK: Sort the list!
+  phones.sort();
+
+  var solution = n == 0 ? 0 : phones.first.length;
+
+  for (var i = 1; i < n; ++i) {
+    solution += compare(phones[i], phones[i - 1]);
+  }
+
+  print(solution);
 }
 
 int compare(String a, String b) {
-    var count = 0;
-    var len = a.length < b.length ? a.length : b.length;
-    
-    while(count < len && a.codeUnitAt(count) == b.codeUnitAt(count)) {
-        count ++;
-    }
-    
-    return a.length - count;
+  var count = 0;
+
+  var len = a.length < b.length ? a.length : b.length;
+
+  while (count < len && a[count] == b[count]) {
+    count++;
+  }
+
+  return a.length - count;
 }
 
 String readString() => stdin.readLineSync();
 
 int readInt() => int.parse(readString());
 
-List<String> readListString(int n)
-    => new List<String>.generate(n, (_) => readString());
+List<String> readPhones(int n)
+  => new List<String>.generate(n, (_) => readString());

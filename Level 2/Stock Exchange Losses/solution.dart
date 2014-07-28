@@ -23,28 +23,28 @@
 /*
   Dart solution to the "Stock Exchange Losses" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
 
 void main() {
-    var N = readInt();
-    var values = readLine();
-    
-    var solution = 0;
+  var n = readInt();
+  var values = readLine();
 
-    var max = N == 0 ? 0 : values.first;
+  var solution = 0;
 
-    for (var value in values.skip(1)) {
-        var dif = value - max;
-        
-        if (dif < solution) solution = dif;
+  var max = n == 0 ? 0 : values.first;
 
-        if (value > max) max = value;
-    }
-    
-    print(solution);
+  for (var value in values.skip(1)) {
+    var dif = value - max;
+
+    if (dif < solution) solution = dif;
+
+    if (value > max) max = value;
+  }
+
+  print(solution);
 }
 
 String readString() => stdin.readLineSync();

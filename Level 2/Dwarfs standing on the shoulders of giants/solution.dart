@@ -23,73 +23,84 @@
 /*
   Dart solution to the "Dwarfs standing on the shoulders of giants" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
-import "dart:collection" show HashMap;
+import "dart:io" show stdin;
 
 void main() {
-    var N = readInt();
+  var n = readInt();
 
-    var solver = new Solver(N);
-    var solution = solver.solve();
-    
-    print(solution);
+  var solver = new Solver(n);
+
+  var solution = solver.solve();
+
+  print(solution);
 }
 
 class Solver {
-    final Map<int, int> persons = new HashMap<int, int>();
-    final List<int> relations = new List<int>();
-    
-    Solver(int n) {
-        readRelations(n);
+  final Map<int, int> persons = new Map<int, int>();
+  final List<int> relations = new List<int>();
+
+  Solver(int n) {
+    readRelations(n);
+  }
+
+  void readRelations(int n) {
+    for (var i = 0; i < n; ++i) {
+      var line = readLine();
+      var a = line[0];
+      var b = line[1];
+
+      // I used a bit unobvious schema here because I didn't
+      // want to create a lot of small lists, but only one.
+      //
+      // Example:
+      // (a, b) => Persons: {a : 0} Relations: [b, null]
+      // (a, c) => Persons: {a : 2} Relations: [b, null, c, 0]
+      // (b, c) => Persons: {a : 2, b : 4} Relations: [b, null, c, 0, c, null]
+      // (a, d) => Persons: {a : 6, b : 4} Relations: [b, null, c, 0, c, null, d, 2]
+      var prev = persons[a];
+      persons[a] = relations.length;
+      relations..add(b)..add(prev);
+    }
+  }
+
+  // Searches the longest chain.
+  int solve() {
+    var max = 0;
+
+    for (var person in persons.keys) {
+      var len = chain(person);
+      if (len > max) {
+        max = len;
+      }
     }
 
-    void readRelations(int n) {
-        for (var i = 0; i < n; ++ i) {
-            var line = readLine();
-            
-            var prev = persons[line[0]];
-            persons[line[0]] = relations.length;
-            relations.addAll([line[1], prev]);
-        }
+    return max;
+  }
+
+  // Searches the longest given person's chain.
+  int chain(int person) {
+    var max = 1;
+
+    var index = persons[person];
+    while (index != null) {
+
+      var len = 1 + chain(relations[index]);
+      if (len > max) {
+        max = len;
+      }
+
+      index = relations[index + 1];
     }
-    
-    int solve() {
-        var max = 0;
-        
-        for (var person in persons.keys) {
-            var len = chain(person);
-            if (len > max) {
-                max = len;
-            }
-        }
-        
-        return max;
-    }
-    
-    int chain(int person) {
-        var max = 1;
-        
-        var index = persons[person];
-        while (index != null) {
-            
-            var len = 1 + chain(relations[index]);
-            if (len > max) {
-                max = len;
-            }
-            
-            index = relations[index + 1];
-        }
-        
-        return max;
-    }
+
+    return max;
+  }
 }
 
 String readString() => stdin.readLineSync();
 
 int readInt() => int.parse(readString());
 
-List<int> readLine()
-    => readString().split(" ").map(int.parse).toList();
+List<int> readLine() => readString().split(" ").map(int.parse).toList();

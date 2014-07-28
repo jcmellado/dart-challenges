@@ -23,58 +23,63 @@
 /*
   Dart solution to the "Scrabble" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
-
-void main() {
-    var n = readInt();
-    var dict = readListString(n);
-    var letters = readString();
-    
-    var solution;
-    var max = 0;
-    
-    for (var word in dict) {
-        
-        var copy = new List<int>.from(letters.codeUnits);
-        var points = 0;
-        
-        for (var letter in word.codeUnits) {
-            
-            var pos = copy.indexOf(letter);
-            if (pos == -1) {
-                points = 0;
-                break;
-            }
-            
-            copy.removeAt(pos);
-            points += POINTS[letter - A];
-        }
-        
-        if (points > max) {
-            max = points;
-            solution = word;
-        }
-    }
-    
-    print(solution);
-}
+import "dart:io" show stdin;
+import "dart:convert" show ASCII;
 
 const int A = 97;
 
-const List<int> POINTS = const 
-    [1, 3, 3, 2, 1,
-     4, 2, 4, 1, 8,
-     5, 1, 3, 1, 1, 
-     3, 10, 1, 1, 1,
-     1, 4, 4, 8, 4,
-     10];
+const List<int> POINTS = const <int>[
+  1, 3, 3, 2, 1,
+  4, 2, 4, 1, 8,
+  5, 1, 3, 1, 1,
+  3, 10, 1, 1, 1,
+  1, 4, 4, 8, 4,
+  10];
+
+void main() {
+  var n = readInt();
+  var dict = readDict(n);
+  var letters = ASCII.encode(readString());
+
+  var solution;
+  var max = 0;
+
+  for (var word in dict) {
+    var points = 0;
+
+    // Creates a copy of the available letters.
+    var chars = new List<int>.from(letters);
+
+    for (var char in ASCII.encode(word)) {
+      var pos = chars.indexOf(char);
+
+      // Letter not found, abort.
+      if (pos == -1) {
+        points = 0;
+        break;
+      }
+
+      // Removes the used letter of the copy list.
+      chars.removeAt(pos);
+
+      points += POINTS[char - A];
+    }
+
+    if (points > max) {
+      max = points;
+      solution = word;
+    }
+  }
+
+  print(solution);
+}
 
 String readString() => stdin.readLineSync();
 
 int readInt() => int.parse(readString());
 
-List<String> readListString(int n)
-    => new List<String>.generate(n, (_) => readString());
+List<String> readDict(int n)
+  => new List<String>.generate(n, (_) => readString());

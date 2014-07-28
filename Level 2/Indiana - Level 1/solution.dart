@@ -23,43 +23,43 @@
 /*
   Dart solution to the "Indiana - Level 1" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
 
 void main() {
-    var init = readIntLine();
-    var w = init[0];
-    var h = init[1];
-    var grid = readGrid(h);
-    var ex = readInt();
-    
-    while (true) {
-        var turn = readLine();
-        var xi = int.parse(turn[0]);
-        var yi = int.parse(turn[1]);
-        var pos = turn[2];
+  var init = readIntLine();
+  var width = init[0];
+  var height = init[1];
+  var grid = readGrid(height);
+  var exit = readInt();
 
-        switch(grid[yi][xi]) {
-            case 0: break;
-            case 1: yi ++; break;
-            case 2: if (pos == "LEFT") xi ++; else xi --; break;
-            case 3: yi ++; break;
-            case 4: if (pos == "TOP") xi --; else yi ++; break;
-            case 5: if (pos == "TOP") xi ++; else yi ++; break;
-            case 6: if (pos == "LEFT") xi ++; else xi --; break;
-            case 7: yi ++; break;
-            case 8: yi ++; break;
-            case 9: yi ++; break;
-            case 10: xi --; break;
-            case 11: xi ++; break;
-            case 12: yi ++; break;
-            case 13: yi ++; break;
-        }
+  while (true) {
+    var turn = readLine();
+    var x = int.parse(turn[0]);
+    var y = int.parse(turn[1]);
+    var entry = turn[2];
 
-        print("$xi $yi");
+    switch (grid[y][x]) {
+      case 0: break;
+      case 1: y++; break;
+      case 2: if (entry == "LEFT") x++; else x--; break;
+      case 3: y++; break;
+      case 4: if (entry == "TOP") x--; else y++; break;
+      case 5: if (entry == "TOP") x++; else y++; break;
+      case 6: if (entry == "LEFT") x++; else x--; break;
+      case 7: y++; break;
+      case 8: y++; break;
+      case 9: y++; break;
+      case 10: x--; break;
+      case 11: x++; break;
+      case 12: y++; break;
+      case 13: y++; break;
     }
+
+    print("$x $y");
+  }
 }
 
 String readString() => stdin.readLineSync();
@@ -68,8 +68,7 @@ int readInt() => int.parse(readString());
 
 List readLine() => readString().split(" ");
 
-List<int> readIntLine()
-    => readString().split(" ").map(int.parse).toList();
+List<int> readIntLine() => readString().split(" ").map(int.parse).toList();
 
 List<List<int>> readGrid(int h)
-    => new List<List<int>>.generate(h, (_) => readIntLine());
+  => new List<List<int>>.generate(h, (_) => readIntLine());

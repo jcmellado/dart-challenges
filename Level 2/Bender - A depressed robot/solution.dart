@@ -23,148 +23,173 @@
 /*
   Dart solution to the "Bender - A depressed robot" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
 
 void main() {
-    var init = readLineInt();
-    var L = init[0];
-    var C = init[1];
-    var MAP = readListString(L);
+  var line = readLine();
+  var rows = line[0];
+  var cols = line[1];
+  var map = readMap(rows);
 
-    var solver = new Solver(L, C, MAP);
-    var solution = solver.solve();
-    
-    solution.forEach(print);
+  var solver = new Solver(rows, cols, map);
+
+  var solution = solver.solve();
+
+  solution.forEach(print);
 }
 
 class Solver {
-    final int L;
-    final int C;
-    final List<List<String>> MAP;
-    
-    final List<String> DIRS = const ["SOUTH", "EAST", "NORTH", "WEST"];
+  final int rows;
+  final int cols;
+  final List<List<String>> map;
 
-    Solver(this.L, this.C, this.MAP);
+  final List<String> DIRS = const <String>["SOUTH", "EAST", "NORTH", "WEST"];
 
-    List<String> solve() {
-        var solution = new List<String>();
-        
-        var history = new List<State>();
-        
-        var state = start();
-        do {
-            var dir = state.dir;
-            
-            switch(MAP[state.row][state.col]) {
-                case "S": dir = "SOUTH"; break;
-                case "E": dir = "EAST"; break;
-                case "N": dir = "NORTH"; break;
-                case "W": dir = "WEST"; break;
-                case "I": state.inverter = !state.inverter; break;
-                case "B": state.breaker = !state.breaker; break;
-                case "X": MAP[state.row][state.col] = " "; break;
-                case "T": teleport(state); break;
-            }
-            
-            var next = move(state, dir);
-            if (isObstacle(next)) {
-                next = changeDir(state);
-            }
-            
-            if (isLoop(history, next)) return ["LOOP"];
-            
-            history.add(next);
-            solution.add(next.dir);
-        
-            state = next;
-        } while(MAP[state.row][state.col] != r"$");
-        
-        return solution;
-    }
-    
-    State start() {
-        for (var row = 1; row < L - 1; ++ row) {
-            for (var col = 1; col < C - 1; ++ col) {
-                if (MAP[row][col] == "@") {
-                    return new State(row, col, "SOUTH", false, false);
-                }
-            }
+  Solver(this.rows, this.cols, this.map);
+
+  List<String> solve() {
+    var solution = new List<String>();
+
+    // Bender's state history, used to check infinite loops.
+    var history = new List<State>();
+
+    // Finds Bender's starting position.
+    var state = start();
+    do {
+      var dir = state.dir;
+
+      switch (map[state.row][state.col]) {
+
+        // Changes current Bender's direction.
+        case "S": dir = "SOUTH"; break;
+        case "E": dir = "EAST"; break;
+        case "N": dir = "NORTH"; break;
+        case "W": dir = "WEST"; break;
+
+        // Mode inverter on/off.
+        case "I": state.inverter = !state.inverter; break;
+
+        // Mode breaker on/off.
+        case "B": state.breaker = !state.breaker; break;
+
+        // Breaks the obstacle.
+        case "X": map[state.row][state.col] = " "; break;
+
+        // Beam me up, Scotty!
+        case "T": teleport(state); break;
+      }
+
+      // Moves or inverts current Bender's direction.
+      var next = move(state, dir);
+      if (isObstacle(next)) {
+        next = changeDir(state);
+      }
+
+      // Avoid infinite loop.
+      if (isLoop(history, next)) return ["LOOP"];
+
+      history.add(next);
+      solution.add(next.dir);
+
+      state = next;
+    } while (map[state.row][state.col] != r"$");
+
+    return solution;
+  }
+
+  // Finds Bender's starting position.
+  State start() {
+    for (var row = 1; row < rows - 1; ++row) {
+      for (var col = 1; col < cols - 1; ++col) {
+        if (map[row][col] == "@") {
+          return new State(row, col, "SOUTH", false, false);
         }
+      }
     }
-    
-    State move(State state, String dir) {
-        var row = state.row;
-        var col = state.col;
-        
-        switch(dir) {
-            case "SOUTH" : row ++; break;
-            case "EAST" : col ++; break;
-            case "NORTH" : row --; break;
-            case "WEST" : col --; break;
-        }
-        
-        return new State(row, col, dir, state.breaker, state.inverter);
+    return null;
+  }
+
+  // Moves Bender in the given direction.
+  State move(State state, String dir) {
+    var row = state.row;
+    var col = state.col;
+
+    switch (dir) {
+      case "SOUTH": row++; break;
+      case "EAST": col++; break;
+      case "NORTH": row--; break;
+      case "WEST": col--; break;
     }
 
-    bool isObstacle(State state) {
-        var cell = MAP[state.row][state.col];
-        return cell == "#" || (cell == "X" && !state.breaker);
+    return new State(row, col, dir, state.breaker, state.inverter);
+  }
+
+  // Inverts the current Bender's direction.
+  State changeDir(State state) {
+    var dirs = state.inverter ? DIRS.reversed : DIRS;
+
+    for (var dir in dirs) {
+      var next = move(state, dir);
+      if (!isObstacle(next)) {
+        return next;
+      }
     }
 
-    State changeDir(State state) {
-        for (var dir in (state.inverter ? DIRS.reversed : DIRS)) {
-            var next = move(state, dir);
-            if (!isObstacle(next)) {
-                return next;
-            }
+    return null;
+  }
+
+  // Finds the telerport's position different to the current Bender's position.
+  void teleport(State state) {
+    for (var row = 1; row < rows - 1; ++row) {
+      for (var col = 1; col < cols - 1; ++col) {
+        if (map[row][col] == "T" && (row != state.row || col != state.col)) {
+          state.row = row;
+          state.col = col;
+          return;
         }
+      }
     }
-    
-    void teleport(State state) {
-        for (var row = 1; row < L - 1; ++ row) {
-            for (var col = 1; col < C - 1; ++ col) {
-                if (MAP[row][col] == "T" && (row != state.row || col != state.col)) {
-                    state.row = row;
-                    state.col = col;
-                    return;
-                }
-            }
-        }
+  }
+
+  bool isObstacle(State state) {
+    var cell = map[state.row][state.col];
+
+    return cell == "#" || (cell == "X" && !state.breaker);
+  }
+
+  bool isLoop(List<State> history, State state) {
+    var count = 0;
+    for (var old in history) {
+      if (old.row == state.row &&
+          old.col == state.col &&
+          old.dir == state.dir &&
+          old.breaker == state.breaker &&
+          old.inverter == state.inverter) {
+
+        count++;
+      }
     }
-    
-    bool isLoop(List<State> history, State state) {
-        var count = 0;
-        for (var old in history) {
-            if (old.row == state.row &&
-                old.col == state.col &&
-                old.dir == state.dir &&
-                old.breaker == state.breaker &&
-                old.inverter == state.inverter) {
-                    
-                count ++;
-            }
-        }
-        return count == 5; // ...
-    }
+    return count == 5; // Enough to me.
+  }
 }
 
+// Bender's state.
 class State {
-    int row;
-    int col;
-    String dir;
-    bool breaker;
-    bool inverter;
-    
-    State(this.row, this.col, this.dir, this.breaker, this.inverter);
+  int row;
+  int col;
+  String dir;
+  bool breaker;
+  bool inverter;
+
+  State(this.row, this.col, this.dir, this.breaker, this.inverter);
 }
 
 String readString() => stdin.readLineSync();
 
-List<int> readLineInt()
-    => readString().split(" ").map(int.parse).toList();
+List<int> readLine() => readString().split(" ").map(int.parse).toList();
 
-List<List<String>> readListString(int n)
-    => new List<List<String>>.generate(n, (_) => readString().split(""));
+List<List<String>> readMap(int n)
+  => new List<List<String>>.generate(n, (_) => readString().split(""));

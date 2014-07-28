@@ -23,46 +23,51 @@
 /*
   Dart solution to the "Conway Sequence" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
 
 void main() {
-    var R = readInt();
-    var L = readInt();
+  var root = readInt();
+  var lines = readInt();
 
-    var solution = [R];
-    
-    for (var i = 1; i < L; ++ i) {
-        solution = next(solution);
-    }
-    
-    print(solution.join(" "));
+  var solution = [root];
+
+  for (var i = 1; i < lines; ++i) {
+    solution = next(solution);
+  }
+
+  print(solution.join(" "));
 }
 
 List<int> next(List<int> sequence) {
-    var result = [];
-    
-    var count = 1;
-    var old = sequence[0];
-    
-    for (var symbol in sequence.skip(1)) {
-        
-        if (symbol == old) {
-            count ++;
+  var result = new List<int>();
 
-        } else {
-            result.addAll([count, old]);
-            
-            count = 1;
-            old = symbol;
-        }
+  var count = 1;
+  var old = sequence[0];
+
+  for (var symbol in sequence.skip(1)) {
+
+    // Counts symbols.
+    if (symbol == old) {
+      count++;
+
+      // Adds the counter to the result and restarts it.
+    } else {
+      result..add(count)..add(old);
+
+      count = 1;
+      old = symbol;
     }
-    
-    if (count != 0) result.addAll([count, old]);
-    
-    return result;
+  }
+
+  // Takes care of trailing symbols.
+  if (count != 0) result..add(count)..add(old);
+
+  return result;
 }
 
-int readInt() => int.parse(stdin.readLineSync());
+String readString() => stdin.readLineSync();
+
+int readInt() => int.parse(readString());

@@ -23,32 +23,34 @@
 /*
   Dart solution to the "Telephone Numbers" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
+
+// Borrowed from mYk's Phyton solution.
 
 void main() {
-    var N = readInt();
+  var n = readInt();
 
-    var tree = {};
-    for (var i = 0; i < N; ++ i) {
-        add(tree, readString());
-    }
-    
-    print(count(tree));
+  var tree = {};
+  for (var i = 0; i < n; ++i) {
+    add(tree, readString());
+  }
+
+  print(count(tree));
 }
 
 void add(Map root, String phone) {
-    if (phone.isEmpty) return;
-    
-    var number = phone.codeUnitAt(0);
-    root.putIfAbsent(number, () => {});
-    add(root[number], phone.substring(1));
+  if (phone.isEmpty) return;
+
+  var number = phone[0];
+  root.putIfAbsent(number, () => {});
+  add(root[number], phone.substring(1));
 }
 
 int count(Map root)
-    => root.length + root.values.fold(0, (len, node) => len + count(node));
+  => root.length + root.values.fold(0, (len, node) => len + count(node));
 
 String readString() => stdin.readLineSync();
 

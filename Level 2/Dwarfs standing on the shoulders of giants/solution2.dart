@@ -23,36 +23,37 @@
 /*
   Dart solution to the "Dwarfs standing on the shoulders of giants" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
 import "dart:math" show max;
 
+// Borrowed from r0m1's Python solution.
+
 void main() {
-    var N = readInt();
+  var n = readInt();
 
-    var tree = {};
-    for (var i = 0; i < N; ++ i) {
-        var line = readLine();
-        add(tree, line[0], line[1]);
-    }
+  var tree = {};
+  for (var i = 0; i < n; ++i) {
+    var line = readLine();
+    add(tree, line[0], line[1]);
+  }
 
-    print(depth(tree));
+  print(depth(tree));
 }
 
 void add(Map root, int a, int b) {
-    root.putIfAbsent(a, () => {});
-    root.putIfAbsent(b, () => {});
-    root[a][b] = root[b];
+  root.putIfAbsent(a, () => {});
+  root.putIfAbsent(b, () => {});
+  root[a][b] = root[b];
 }
 
 int depth(Map root)
-    => root.values.fold(0, (len, node) => max(len, depth(node) + 1));
+  => root.values.fold(0, (len, node) => max(len, depth(node) + 1));
 
 String readString() => stdin.readLineSync();
 
 int readInt() => int.parse(readString());
 
-List<int> readLine()
-    => readString().split(" ").map(int.parse).toList();
+List<int> readLine() => readString().split(" ").map(int.parse).toList();
