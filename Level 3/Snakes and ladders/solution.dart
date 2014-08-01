@@ -23,80 +23,80 @@
 /*
   Dart solution to the "Snakes and ladders" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
 
 void main() {
-    var n = readInt();
-    var board = readBoard(n);
-    
-    var solver = new Solver(board);
-    
-    var solution = solver.solve();
+  var n = readInt();
+  var board = readBoard(n);
 
-    print(solution == null ? "impossible" : solution);
+  var solver = new Solver(board);
+
+  var solution = solver.solve();
+
+  print(solution == null ? "impossible" : solution);
 }
 
 class Solver {
-    final List<String> board;
-    
-    List<int> costs;
-    
-    Solver(this.board) {
-        costs = new List<int>(board.length);
-    }
-    
-    int solve() {
-        var start = board.indexOf("S");
+  final List<String> board;
 
-        return play(start, 0);
-    }
+  List<int> costs;
 
-    int play(int pos, int depth) {
+  Solver(this.board) {
+    costs = new List<int>(board.length);
+  }
 
-        // Stay on the board, please.
-        if (pos < 0 || pos >= board.length) return null;
-        
-        // Has another cheaper solution already been found?
-        if (costs[pos] != null && costs[pos] <= depth) return null;
+  int solve() {
+    var start = board.indexOf("S");
 
-        // Cost of the current solution being analyzed.
-        costs[pos] = depth;
+    return play(start, 0);
+  }
 
-        var cost;
+  int play(int pos, int depth) {
 
-        switch(board[pos]) {
-            
-            // End?
-            case "E":
-                cost = depth;
-                break;
-                
-            // Throw the dice! Minimum cost wins!
-            case "S":
-            case "R":
-                for (var i = 1; i <= 6; ++ i) {
-                    cost = min(cost, play(pos + i, depth + 1));
-                }
-                break;
-            
-            // Come on, move on!
-            default:
-                cost = play(pos + int.parse(board[pos]), depth + 1);
-                break;
+    // Stay on the board, please.
+    if (pos < 0 || pos >= board.length) return null;
+
+    // Has another cheaper solution already been found?
+    if (costs[pos] != null && costs[pos] <= depth) return null;
+
+    // Cost of the current solution being analyzed.
+    costs[pos] = depth;
+
+    var cost;
+
+    switch (board[pos]) {
+
+      // End?
+      case "E":
+        cost = depth;
+        break;
+
+      // Throw the dice! Minimum cost wins!
+      case "S":
+      case "R":
+        for (var i = 1; i <= 6; ++i) {
+          cost = min(cost, play(pos + i, depth + 1));
         }
-        
-        return cost;
+        break;
+
+      // Come on, move on!
+      default:
+        cost = play(pos + int.parse(board[pos]), depth + 1);
+        break;
     }
+
+    return cost;
+  }
 }
 
 int min(int a, int b) => a == null ? b : (b == null ? a : (a < b ? a : b));
 
-String readString() => stdin.readLineSync(); 
+String readString() => stdin.readLineSync();
 
 int readInt() => int.parse(readString());
 
-List<String> readBoard(int n)
-    => new List<String>.generate(n, (_) => readString());
+List<String> readBoard(int n) =>
+    new List<String>.generate(n, (_) => readString());

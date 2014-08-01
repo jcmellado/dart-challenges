@@ -23,149 +23,149 @@
 /*
   Dart solution to the "CGX Formatter" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
 
 void main() {
-    var n = readInt();
-    var lines = readListString(n);
+  var n = readInt();
+  var lines = readListString(n);
 
-    var formatter = new Formatter();
-    
-    var pretty = formatter.format(lines);
+  var formatter = new Formatter();
 
-    print(pretty);
+  var pretty = formatter.format(lines);
+
+  print(pretty);
 }
 
 class Formatter {
-    String content;
-    int pos;
-    int tab;
-    
-    String pretty;
-    
-    String format(List<String> lines) {
-        content = lines.join("").trim();
-        pos = 0;
-        tab = 0;
-        
-        return prettify();
+  String content;
+  int pos;
+  int tab;
+
+  String pretty;
+
+  String format(List<String> lines) {
+    content = lines.join("").trim();
+    pos = 0;
+    tab = 0;
+
+    return prettify();
+  }
+
+  String prettify() {
+    pretty = "";
+
+    while (!eof()) {
+      element();
     }
-    
-    String prettify() {
-        pretty = "";
-        
-        while(!eof()) {
-            element();
-        }
-        
-        return pretty;
+
+    return pretty;
+  }
+
+  void element() {
+    switch (content[pos]) {
+      case "(":
+        block();
+        break;
+      case "'":
+        stringOrKeyValue();
+        break;
+      default:
+        primitive();
+        break;
     }
-    
-    void element() {
-        switch(content[pos]) {
-            case "(":
-                block();
-                break;
-            case "'":
-                stringOrKeyValue();
-                break;
-            default:
-                primitive();
-                break;
-        }
+  }
+
+  void block() {
+    pretty += content[pos++]; // (
+    pretty += "\n";
+
+    tab++;
+
+    trimLeft();
+
+    while (content[pos] != ")") {
+      padRight();
+      element();
+
+      trimLeft();
+
+      if (content[pos] == ';') {
+        pretty += content[pos++]; // ;
+      }
+      pretty += "\n";
+
+      trimLeft();
     }
-    
-    void block() {
-        pretty += content[pos ++]; // (
+
+    tab--;
+
+    padRight();
+    pretty += content[pos++]; // )
+  }
+
+  void stringOrKeyValue() {
+    pretty += content[pos++]; // '
+
+    while (content[pos] != "'") {
+      pretty += content[pos++];
+    }
+
+    pretty += content[pos++]; // '
+
+    trimLeft();
+
+    if (!eof() && content[pos] == '=') {
+      pretty += content[pos++]; // =
+
+      trimLeft();
+
+      if (content[pos] == '(') {
         pretty += "\n";
-        
-        tab ++;
-
-        trimLeft();
-        
-        while(content[pos] != ")") {
-            padRight();
-            element();
-            
-            trimLeft();
-            
-            if (content[pos] == ';') {
-                pretty += content[pos ++]; // ;
-            }
-            pretty += "\n";
-            
-            trimLeft();
-        }
-        
-        tab --;
-        
         padRight();
-        pretty += content[pos ++]; // )
-    }
-    
-    void stringOrKeyValue() {
-        pretty += content[pos ++]; // '
-        
-        while(content[pos] != "'") {
-            pretty += content[pos ++];
-        }
-        
-        pretty += content[pos ++]; // '
-        
-        trimLeft();
-        
-        if (!eof() && content[pos] == '=') {
-            pretty += content[pos ++]; // =
+      }
 
-            trimLeft();
+      element();
+    }
+  }
 
-            if (content[pos] == '(') {
-                pretty += "\n";
-                padRight();
-            }
-            
-            element();
-        }
+  void primitive() {
+    if ("0123456789".contains(content[pos])) {
+      while (!eof() && "0123456789".contains(content[pos])) {
+        pretty += content[pos++];
+      }
+    } else if (content.substring(pos).startsWith("true")) {
+      pretty += "true";
+      pos += 4;
+    } else if (content.substring(pos).startsWith("false")) {
+      pretty += "false";
+      pos += 5;
+    } else if (content.substring(pos).startsWith("null")) {
+      pretty += "null";
+      pos += 4;
     }
-    
-    void primitive() {
-        if ("0123456789".contains(content[pos])) {
-            while(!eof() && "0123456789".contains(content[pos])) {
-                pretty += content[pos ++];
-            }
-        } else if (content.substring(pos).startsWith("true")) {
-            pretty += "true";
-            pos += 4;
-        } else if (content.substring(pos).startsWith("false")) {
-            pretty += "false";
-            pos += 5;
-        } else if (content.substring(pos).startsWith("null")) {
-            pretty += "null";
-            pos += 4;
-        }
+  }
+
+  bool eof() => pos == content.length;
+
+  void trimLeft() {
+    while (!eof() && " \t\r\n".contains(content[pos])) {
+      pos++;
     }
-    
-    bool eof() => pos == content.length;
-    
-    void trimLeft() {
-        while(!eof() && " \t\r\n".contains(content[pos])) {
-            pos ++;
-        }
+  }
+
+  void padRight() {
+    for (var i = 0; i < tab; ++i) {
+      pretty += "    ";
     }
-    
-    void padRight() {
-        for (var i = 0; i < tab; ++ i) {
-            pretty += "    ";
-        }
-    }
+  }
 }
 
 String readString() => stdin.readLineSync();
 
 int readInt() => int.parse(readString());
 
-List<String> readListString(int n)
-    => new List<String>.generate(n, (_) => readString());
+List<String> readListString(int n) =>
+    new List<String>.generate(n, (_) => readString());

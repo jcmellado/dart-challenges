@@ -23,66 +23,66 @@
 /*
   Dart solution to the "Genome Sequencing" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
 
 void main() {
-    var n = readInt();
-    var subsequences = readListString(n);
+  var n = readInt();
+  var subsequences = readListString(n);
 
-    var solver = new Solver();
-    var solution = solver.solve(subsequences);
-    
-    print(solution);
+  var solver = new Solver();
+  var solution = solver.solve(subsequences);
+
+  print(solution);
 }
 
 class Solver {
 
-    int solve(List<String> subsequences) => permute("", subsequences);
+  int solve(List<String> subsequences) => permute("", subsequences);
 
-    // Returns the minimum permutation length.
-    int permute(String sequence, Iterable<String> subsequences) {
-        var len;
+  // Returns the minimum permutation length.
+  int permute(String sequence, Iterable<String> subsequences) {
+    var len;
 
-        // Done? Return the current sequence length.
-        if (subsequences.isEmpty) return sequence.length;
+    // Done? Return the current sequence length.
+    if (subsequences.isEmpty) return sequence.length;
 
-        for (var subsequence in subsequences) {
+    for (var subsequence in subsequences) {
 
-            // New subsequence (e.g. AAC + CCTT = AACCTT)
-            var prefix = concat(sequence, subsequence);
-            
-            // Rest of subsequences, just skip the current one.
-            var rest = subsequences.where((e) => e != subsequence);
+      // New sequence prefix (e.g. AAC + CCTT = AACCTT)
+      var prefix = concat(sequence, subsequence);
 
-            // Minimum permutation length.
-            len = min(len, permute(prefix, rest));
-        }
+      // Rest of subsequences, just skip the current one.
+      var rest = subsequences.where((e) => e != subsequence);
 
-        return len;
+      // Minimum permutation length.
+      len = min(len, permute(prefix, rest));
     }
-    
-    String concat(String a, String b) {
-        
-        // Full matching.
-        if (a.contains(b)) return a;
 
-        // Partial matching.
-        var pos = 0;
-        for (; pos < a.length; ++ pos) {
-            if (b.startsWith(a.substring(pos))) break;
-        }
-        return a.substring(0, pos) + b;
+    return len;
+  }
+
+  String concat(String a, String b) {
+
+    // Full matching (e.g. AGATTA + GAT = AGATTA)
+    if (a.contains(b)) return a;
+
+    // Partial matching (e.g. AGATTA + TAGA = AGATTAGA)
+    var pos = 0;
+    for ( ; pos < a.length; ++pos) {
+      if (b.startsWith(a.substring(pos))) break;
     }
-    
-    int min(int a, int b) => a == null ? b : (b == null ? a : (a < b ? a : b));
+    return a.substring(0, pos) + b;
+  }
+
+  int min(int a, int b) => a == null ? b : (b == null ? a : (a < b ? a : b));
 }
 
 String readString() => stdin.readLineSync();
 
 int readInt() => int.parse(readString());
 
-List<String> readListString(int n)
-    => new List<String>.generate(n, (_) => readString());
+List<String> readListString(int n) =>
+    new List<String>.generate(n, (_) => readString());

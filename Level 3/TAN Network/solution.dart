@@ -23,117 +23,115 @@
 /*
   Dart solution to the "TAN Network" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
 import "dart:io" show stdin;
 import "dart:math" show PI, cos, sqrt;
 
 void main() {
-    var start = readString();
-    var end = readString();
-    
-    var n = readInt();
-    var stops = readStops(n);
-    
-    var m = readInt();
-    var lines = readLines(stops, m);
+  var start = readString();
+  var end = readString();
 
-    var solver = new Solver(stops);
-    var route = solver.solve(start, end);
-    
-    if (route.isEmpty) {
-        print("IMPOSSIBLE");
-    } else {
-        route.map(removeQuotes).forEach(print);
-    }
+  var n = readInt();
+  var stops = readStops(n);
+
+  var m = readInt();
+  readLines(stops, m);
+
+  var solver = new Solver(stops);
+  var route = solver.solve(start, end);
+
+  if (route.isEmpty) {
+    print("IMPOSSIBLE");
+  } else {
+    route.map(removeQuotes).forEach(print);
+  }
 }
 
 String removeQuotes(String name) => name.substring(1, name.length - 1);
 
 class Solver {
-    final Map<String, Stop> stops;
+  final Map<String, Stop> stops;
 
-    Map<String, Link> visited;
-    
-    Solver(this.stops);
+  final Map<String, Link> visited = new Map<String, Link>();
 
-    Iterable<String> solve(String start, String end) {
-        var route = new List<String>();
+  Solver(this.stops);
 
-        visited = new Map<String, Link>();
+  Iterable<String> solve(String start, String end) {
+    var route = new List<String>();
 
-        explore(start, end);
-    
-        // Only if the end stop was reached.
-        if (visited[end] != null) {
-            var stop = end;
-            do {
-                route.add(stops[stop].name);
-                stop = visited[stop].from;
-            } while(stop != null);
+    explore(start, end);
+
+    // Only if the end stop was reached.
+    if (visited[end] != null) {
+      var stop = end;
+      do {
+        route.add(stops[stop].name);
+        stop = visited[stop].from;
+      } while (stop != null);
+    }
+
+    return route.reversed;
+  }
+
+  void explore(String start, String end) {
+
+    // Use a local array to avoid stackoverflow exception.
+    var stack = new List<Link>()..add(new Link(null, start, 0.0));
+
+    while (stack.isNotEmpty) {
+      var link = stack.removeAt(0);
+
+      var visit = visited[link.to];
+
+      // Unvisited stop or cheaper path found?
+      if (visit == null || visit.cost > link.cost) {
+
+        // Registers as first visit or replaces the
+        // previous one with the new one.
+        visited[link.to] = link;
+
+        // Still not there?
+        if (link.to != end) {
+          var stop = stops[link.to];
+
+          // Visits the stops connected to the current one.
+          for (var connection in stop.connections) {
+            var dist = distance(stop, stops[connection]);
+
+            stack.add(new Link(link.to, connection, link.cost + dist));
+          }
         }
-        
-        return route.reversed;
+      }
     }
+  }
 
-    void explore(String start, String end) {
-
-        // Use a local array to avoid stackoverflow exception.
-        var stack = new List<Link>()
-            ..add(new Link(null, start, 0.0));
-
-        while(stack.isNotEmpty) {
-            var link = stack.removeAt(0);
-            
-            var visit = visited[link.to];
-            
-            // Unvisited stop or cheaper path found?
-            if (visit == null || visit.cost > link.cost) {
-            
-                // Register as first visit or replace the previous one with the new one.
-                visited[link.to] = link;
-                
-                // Still not there?
-                if (link.to != end) {
-                    var stop = stops[link.to];
-
-                    // Visit the stops connected to the current one.
-                    for (var connection in stop.connections) {
-                        var dist = distance(stop, stops[connection]);
-                        
-                        stack.add(new Link(link.to, connection, link.cost + dist));
-                    }
-                }
-            }
-        }
-    }
-
-    double distance(Stop a, Stop b) {
-        var x = (b.longitude - a.longitude) * cos((a.latitude + b.latitude) / 2);
-        var y = (b.latitude - a.latitude);
-        return sqrt(x * x + y * y) * 6371;
-    }
+  double distance(Stop a, Stop b) {
+    var x = (b.longitude - a.longitude) * cos((a.latitude + b.latitude) / 2);
+    var y = (b.latitude - a.latitude);
+    return sqrt(x * x + y * y) * 6371;
+  }
 }
 
 // Train stop.
 class Stop {
-    String name;
-    double latitude;
-    double longitude;
-    
-    List<String> connections = new List<String>();
-    
-    Stop(this.name, this.latitude, this.longitude);
+  final String name;
+  final double latitude;
+  final double longitude;
+
+  final List<String> connections = new List<String>();
+
+  Stop(this.name, this.latitude, this.longitude);
 }
 
 // Weighted link.
 class Link {
-    String from;
-    String to;
-    double cost;
-    
-    Link(this.from, this.to, this.cost);
+  final String from;
+  final String to;
+  final double cost;
+
+  Link(this.from, this.to, this.cost);
 }
 
 String readString() => stdin.readLineSync();
@@ -141,22 +139,23 @@ String readString() => stdin.readLineSync();
 int readInt() => int.parse(readString());
 
 Map<String, Stop> readStops(int n) {
-    var stops = new Map<String, Stop>();
+  var stops = new Map<String, Stop>();
 
-    for (var i = 0; i < n; ++ i) {
-        var line = readString().split(",");
-        var latitude = double.parse(line[3]) * PI / 180.0;
-        var longitude = double.parse(line[4]) * PI / 180.0;
-        var stop = new Stop(line[1], latitude, longitude);
-        stops[line[0]] = stop;
-    }
-    
-    return stops;
+  for (var i = 0; i < n; ++i) {
+    var line = readString().split(",");
+    var latitude = double.parse(line[3]) * PI / 180.0;
+    var longitude = double.parse(line[4]) * PI / 180.0;
+
+    stops[line[0]] = new Stop(line[1], latitude, longitude);
+  }
+
+  return stops;
 }
 
 void readLines(Map<String, Stop> stops, int m) {
-    for (var i = 0; i < m; ++ i) {
-        var line = readString().split(" ");
-        stops[line[0]].connections.add(line[1]);
-    }
+  for (var i = 0; i < m; ++i) {
+    var line = readString().split(" ");
+
+    stops[line[0]].connections.add(line[1]);
+  }
 }

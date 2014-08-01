@@ -23,187 +23,200 @@
 /*
   Dart solution to the "Skynet - The Bridge" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
-import "dart:io";
+import "dart:io" show stdin;
 
 void main() {
-    
-    // Init information
-    var m = readInt();
-    var v = readInt();
-    
-    var road = new List<String>(4);
-    road[0] = readString();
-    road[1] = readString();
-    road[2] = readString();
-    road[3] = readString();
+  var m = readInt();
+  var survive = readInt();
+  var road = readRoad(4);
 
-    stderr.writeln("m:$m v:$v");
-    stderr.writeln("${road[0]}");
-    stderr.writeln("${road[1]}");
-    stderr.writeln("${road[2]}");
-    stderr.writeln("${road[3]}");
-    
-    var solver;
-    
-    while (true) {
-        
-        // Turn information
-        var speed = readInt();
-        
-        var motos = new List<Moto>(m); 
-        for (var i = 0; i < m; ++ i) {
-            var line = readLine();
-            motos[i] = new Moto(line[0], line[1], line[2] == 1);
-        }
+  var solver;
 
-        // Solve
-        if (solver == null) {
-            solver = new Solver(m, v, road, speed, motos);
-        }
-        
-        print(solver.next());
+  while (true) {
+    var speed = readInt();
+    var motos = readMotos(m);
+
+    // First time here? Solve the puzzle!
+    if (solver == null) {
+      solver = new Solver(survive, road);
+
+      solver.solve(speed, motos);
     }
+
+    print(solver.next());
+  }
 }
 
 class Solver {
-    int _m;
-    int _v;
-    List<String> _road;
+  final int survive;
+  final List<String> road;
 
-    List<String> _solution = new List<String>();
+  final List<String> solution = new List<String>();
 
-    Solver(this._m, this._v, this._road, int speed, List<Moto> motos) {
-        var context = new Context(speed, motos);
-        
-        solve(context, 1);
-    }
-    
-    String next() => _solution.removeLast();
-    
-    List<String> _commands = ["SPEED", "WAIT", "JUMP", "SLOW", "UP", "DOWN"];
-    
-    bool solve(Context context, int depth) { 
-        if (depth > 50) {
-            return false;
-        }
-        if (isDone(context)) {
-            return true;
-        }
-        for (var command in _commands) {
-            var moved = move(context, command);
-            if (isValid(moved)) {
-                if (solve(moved, depth + 1)) {
-                    _solution.add(command);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
-    // Any moto reach the end of the road
-    bool isDone(Context context) 
-        => context.motos.any((moto) => moto.x > _road[moto.y].length);
+  Solver(this.survive, this.road);
 
-    // At least v motos are still active
-    bool isValid(Context context)
-        => context.motos.fold(0, (value, moto) => value + (moto.active ? 1 : 0)) >= _v;
+  String next() => solution.removeLast();
 
-    Context move(Context context, String command) {
-        var moved = context.clone();
-        
-        var up = !context.motos.any((moto) => moto.active && moto.y == 0);
-        var down = !context.motos.any((moto) => moto.active && moto.y == 3);
-        
-        switch(command) {
-            case "SPEED": moved.speed ++; break;
-            case "SLOW": if (moved.speed > 1) moved.speed --; break;
-        }
-        
-        for (var moto in moved.motos) {
-            if (moto.active) {
-                switch(command) {
-                    case "SPEED":
-                    case "SLOW":
-                    case "WAIT":
-                        moto.active = allGround(moto, moved.speed, 0);
-                        break;
-                    case "JUMP":
-                        moto.active = isGround(moto, moved.speed);
-                        break;
-                    case "UP":
-                        if (up) {
-                            moto.active = canUp(moto, moved.speed);
-                            if (moto.active) moto.y -= 1;
-                        } else {
-                            moto.active = allGround(moto, moved.speed, 0);
-                        }
-                        break;
-                    case "DOWN":
-                        if (down) {
-                            moto.active = canDown(moto, moved.speed);
-                            if (moto.active) moto.y += 1;
-                        } else {
-                            moto.active = allGround(moto, moved.speed, 0);
-                        }
-                        break;
-                }
-                
-                if (moto.active) moto.x += moved.speed;
-            }
-        }
-        
-        return moved;
+  final List<String> COMMANDS = const <String>[
+      "SPEED", "WAIT", "JUMP", "SLOW", "UP", "DOWN"];
+
+  bool solve(int speed, List<Moto> motos) =>
+      solveFrom(new Context(speed, motos));
+
+  bool solveFrom(Context context) {
+
+    // Done?
+    if (isDone(context)) {
+      return true;
     }
 
-    bool canUp(Moto moto, int speed)
-	    => allGround(moto, speed - 1, 0) && allGround(moto, speed, -1);
-    
-    bool canDown(Moto moto, int speed)
-	    => allGround(moto, speed - 1, 0) && allGround(moto, speed, 1);
+    // Tries all the commands.
+    for (var command in COMMANDS) {
 
-    bool allGround(Moto moto, int speed, int y) {
-        for (var i = moto.x + 1; i <= moto.x + speed; ++ i) {
-            if (i >= _road[moto.y + y].length) { // End of road
-                return true;
-            }
-            if (_road[moto.y + y][i] == "0") {
-                return false;
-            }
+      // Move!
+      var moved = move(context, command);
+      if (isValid(moved)) {
+
+        // Tries to solve from here.
+        if (solveFrom(moved)) {
+          solution.add(command);
+          return true;
         }
-        return true;
+      }
     }
-    
-    bool isGround(Moto moto, int speed)
-        => (moto.x + speed >= _road[moto.y].length) // End of road
-        || (_road[moto.y][moto.x + speed] == ".");
+
+    return false;
+  }
+
+  // One moto reaches the end of the road.
+  bool isDone(Context context) =>
+      context.motos.any((moto) => moto.x > road[moto.y].length);
+
+  // At least v motos are still active.
+  bool isValid(Context context) =>
+      context.motos.fold(0, (value, moto) => value + (moto.active ? 1 : 0)) >=
+          survive;
+
+  Context move(Context context, String command) {
+    var moved = context.clone();
+
+    // Can move up/down?
+    var up = !context.motos.any((moto) => moto.active && moto.y == 0);
+    var down = !context.motos.any((moto) => moto.active && moto.y == 3);
+
+    // Speed command.
+    switch (command) {
+      case "SPEED":
+        moved.speed++;
+        break;
+      case "SLOW":
+        if (moved.speed > 1) moved.speed--;
+        break;
+    }
+
+    // Movement command.
+    for (var moto in moved.motos) {
+
+      if (moto.active) {
+
+        switch (command) {
+          case "SPEED":
+          case "SLOW":
+          case "WAIT":
+            moto.active = allGround(moto, moved.speed, 0);
+            break;
+          case "JUMP":
+            moto.active = isGround(moto, moved.speed);
+            break;
+          case "UP":
+            if (up) {
+              moto.active = canUp(moto, moved.speed);
+              if (moto.active) moto.y--;
+            } else {
+              moto.active = allGround(moto, moved.speed, 0);
+            }
+            break;
+          case "DOWN":
+            if (down) {
+              moto.active = canDown(moto, moved.speed);
+              if (moto.active) moto.y++;
+            } else {
+              moto.active = allGround(moto, moved.speed, 0);
+            }
+            break;
+        }
+
+        if (moto.active) moto.x += moved.speed;
+      }
+    }
+
+    return moved;
+  }
+
+  bool canUp(Moto moto, int speed) =>
+      allGround(moto, speed - 1, 0) && allGround(moto, speed, -1);
+
+  bool canDown(Moto moto, int speed) =>
+      allGround(moto, speed - 1, 0) && allGround(moto, speed, 1);
+
+  bool allGround(Moto moto, int speed, int y) {
+    for (var i = moto.x + 1; i <= moto.x + speed; ++i) {
+
+      // End of the road?
+      if (i >= road[moto.y + y].length) return true;
+
+      // Hollow?
+      if (road[moto.y + y][i] == "0")  return false;
+    }
+    return true;
+  }
+
+  bool isGround(Moto moto, int speed) =>
+
+      // End of the road?
+      (moto.x + speed >= road[moto.y].length) ||
+
+      // Ground?
+      (road[moto.y][moto.x + speed] == ".");
 }
 
 class Moto {
-    int x;
-    int y;
-    bool active;
+  int x;
+  int y;
+  bool active;
 
-    Moto(this.x, this.y, this.active);
-    
-    Moto clone() => new Moto(this.x, this.y, this.active);
+  Moto(this.x, this.y, this.active);
+
+  Moto clone() => new Moto(this.x, this.y, this.active);
 }
 
 class Context {
-    int speed;
-    List<Moto> motos;
-    
-    Context(this.speed, this.motos);
-    
-    Context clone() => new Context(this.speed, 
-        new List.generate(motos.length, (i) => motos[i].clone()));
-}
+  int speed;
+  List<Moto> motos;
 
-int readInt() => int.parse(stdin.readLineSync());
+  Context(this.speed, this.motos);
+
+  Context clone() =>
+      new Context(
+          this.speed,
+          new List.generate(motos.length, (i) => motos[i].clone()));
+}
 
 String readString() => stdin.readLineSync();
 
-List<int> readLine() => stdin.readLineSync().split(" ").map(int.parse).toList();
+int readInt() => int.parse(readString());
+
+List<int> readLine() => readString().split(" ").map(int.parse).toList();
+
+List<Moto> readMotos(int n) => new List<Moto>.generate(n, (_) => readMoto());
+
+Moto readMoto() {
+  var line = readLine();
+  return new Moto(line[0], line[1], line[2] == 1);
+}
+
+List<String> readRoad(int n) =>
+    new List<String>.generate(n, (_) => readString());

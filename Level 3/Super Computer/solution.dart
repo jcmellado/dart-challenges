@@ -23,79 +23,79 @@
 /*
   Dart solution to the "Super Computer" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
 
 import "dart:io" show stdin;
 
 void main() {
-    var n = readInt();
-    var calcs = readCalculations(n);
-    
-    var solution = solve(calcs);
-    
-    print(solution);
+  var n = readInt();
+  var calcs = readCalculations(n);
+
+  var solution = solve(calcs);
+
+  print(solution);
 }
- 
+
 int solve(List<Calc> calcs) {
 
-    // Best scenario: All calculations will can be performed.
-    var tasks = calcs.length;
+  // Best scenario: All calculations will can be performed.
+  var tasks = calcs.length;
 
-    // Hack: Order calculations by start day.
-    calcs.sort((a, b) => a.start.compareTo(b.start));
+  // THE TRICK: Order calculations by start day.
+  calcs.sort((a, b) => a.start.compareTo(b.start));
 
-    // Beyond this endpoint there aren't any planned calculations.
-    var end = 0;
+  // Beyond this endpoint there aren't any planned calculations.
+  var end = 0;
 
-    for (var calc in calcs) {
-    
-        // Overlap?
-        // ---------] <= end
-        //   [---]             yes!
-        //     [-------]       yes!
-        //               [---] no!
-        if (calc.start > end) {
-            
-            // ---------]
-            //              [---] <= new endpoint
-            end = calc.end;
+  for (var calc in calcs) {
 
-        } else {
+    // Overlap?
+    // ---------] <= end
+    //   [---]             yes!
+    //     [-------]       yes!
+    //               [---] no!
+    if (calc.start > end) {
 
-            // Sorry, only one of the two calculations will can be performed.
-            tasks --;
-            
-            // ---------]
-            //   [---] <= new endpoint
-            // or
-            // ---------] <= keep the previous endpoint
-            //     [-------]
-            if (calc.end < end) end = calc.end;
-        }
+      // ---------]
+      //              [---] <= new endpoint
+      end = calc.end;
+
+    } else {
+
+      // Sorry, only one of the two calculations will can be performed.
+      tasks--;
+
+      // ---------]
+      //   [---] <= new endpoint
+      // or
+      // ---------] <= keep the previous endpoint
+      //     [-------]
+      if (calc.end < end) end = calc.end;
     }
+  }
 
-    return tasks;
+  return tasks;
 }
 
 class Calc {
-    int start;
-    int end;
-    
-    Calc(this.start, int duration) {
-        end = start + duration - 1;
-    }
+  int start;
+  int end;
+
+  Calc(this.start, int duration) {
+    end = start + duration - 1;
+  }
 }
 
 String readString() => stdin.readLineSync();
 
 int readInt() => int.parse(readString());
 
-List<Calc> readCalculations(int n)
-    => new List<Calc>.generate(n, (_) => readCalculation());
+List<Calc> readCalculations(int n) =>
+    new List<Calc>.generate(n, (_) => readCalculation());
 
 Calc readCalculation() {
-   var line = readString().split(" ").map(int.parse).toList();
-   
-   return new Calc(line[0], line[1]);
+  var line = readString().split(" ").map(int.parse).toList();
+
+  return new Calc(line[0], line[1]);
 }

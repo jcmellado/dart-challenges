@@ -23,67 +23,70 @@
 /*
   Dart solution to the "Bender - The money machine" CodinGame challenge.
 
-  Visit http://www.codingame.com/ for more information.
+  Visit http://www.codingame.com for more information.
 */
-import "dart:io";
+
+import "dart:io" show stdin;
 
 void main() {
-    var n = readInt();
-    var rooms = readRooms(n);
-    
-    var solver = new Solver(rooms);
-    
-    var money = solver.solve();
+  var n = readInt();
+  var rooms = readRooms(n);
 
-    print(money);
+  var solver = new Solver(rooms);
+
+  var money = solver.solve();
+
+  print(money);
 }
 
 class Solver {
-    final List<Room> rooms;
+  final List<Room> rooms;
 
-    Solver(this.rooms);
+  Solver(this.rooms);
 
-    // Bender starts in the room number 0 with no money.
-    int solve() => visit(0, 0);
+  // Bender starts in the room number 0 with no money.
+  int solve() => visit(0, 0);
 
-    int visit(int door, int money) {
-        var room = rooms[door];
+  int visit(int door, int money) {
+    var room = rooms[door];
 
-        // Has this room already been visited?
-        if (room.max > money) return 0;
+    // Has this room already been visited?
+    if (room.max > money) return 0;
 
-        // Max money found so far before visiting this room.
-        room.max = money;
-        
-        // Open the doors, maybe you'll get lucky!
-        var a = room.a == null ? 0 : visit(room.a, money + room.money);
-        var b = room.b == null ? 0 : visit(room.b, money + room.money);
+    // Max money found so far before visiting this room.
+    room.max = money;
 
-        return room.money + (a > b ? a : b);
-    }
+    // Open the doors, maybe you'll get lucky!
+    var a = room.a == null ? 0 : visit(room.a, money + room.money);
+    var b = room.b == null ? 0 : visit(room.b, money + room.money);
+
+    return room.money + (a > b ? a : b);
+  }
 }
 
 class Room {
-    int money;
-    int a;
-    int b;
-    
-    // Max money found so far before visiting this room.
-    int max = 0;
-    
-    Room(String line) {
-        var fields = line.split(" ");
-        
-        money = int.parse(fields[1]);
-        
-        if (fields[2] != 'E') a = int.parse(fields[2]);
-        if (fields[3] != 'E') b = int.parse(fields[3]);
-    }
+  final int money;
+  final int a;
+  final int b;
+
+  // Max money found so far before visiting this room.
+  int max = 0;
+
+  Room(this.money, this.a, this.b);
 }
 
 String readString() => stdin.readLineSync();
 
 int readInt() => int.parse(readString());
 
-List<Room> readRooms(int n) =>
-    new List<Room>.generate(n, (_) => new Room(readString()));
+List<Room> readRooms(int n) => new List<Room>.generate(n, (_) => readRoom());
+
+Room readRoom() {
+  var fields = readString().split(" ");
+
+  var money = int.parse(fields[1]);
+  var a = fields[2] == 'E' ? null : int.parse(fields[2]);
+  var b = fields[3] == 'E' ? null : int.parse(fields[3]);
+
+  return new Room(money, a, b);
+}
